@@ -1,8 +1,11 @@
 package com.example.util
 
+import com.example.entity.*
 import com.typesafe.config.*
+import kotlinx.coroutines.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.*
+import org.jetbrains.exposed.sql.transactions.experimental.*
 
 object DatabaseFactory {
 
@@ -15,7 +18,10 @@ object DatabaseFactory {
             password = config.getString("ktor.database.password")
         )
         transaction(database) {
-
+            SchemaUtils.create(QuestionEntity)
         }
     }
+
+    suspend fun <T> databaseQuery(block: suspend () -> T): T =
+        newSuspendedTransaction(Dispatchers.IO) { block() }
 }
